@@ -51,9 +51,12 @@ router.callback = function (req, res) {
     //the whole response has been recieved, so we just print it out here
     response.on('end', function () {
       exchanges = JSON.parse(str);
+      if (!exchanges || !exchanges.access_token) {
+        res.redirect('../done?status=fail&authFlow=false');
+      }
       req.session.access_token = exchanges.access_token;
       console.log("Saving " + req.session.access_token);
-      res.redirect('../github');
+      res.redirect('../done?status=success&authFlow=false');
     });
   });
   httpPost.write(data);

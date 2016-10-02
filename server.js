@@ -3,7 +3,7 @@ var express = require('express');
 var webpack = require('webpack');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
-var session = require('express-session');
+var session = require('client-sessions');
 var config = require('./config/webpack.prod');
 var authenticate = require('./routes/authenticate');
 var DEBUG = require('./debug');
@@ -15,11 +15,16 @@ var compiler = webpack(config);
 var port = process.env.PORT || 3000;
 
 app.use(session({
-  secret: secret,
-  resave: true,
-  saveUninitialized: true,
-  cookie: { secure: false, maxAge: null }
+  cookieName: 'githubAddin', // cookie name dictates the key name added to the request object
+  requestKey: 'session',
+  secret: secret, // should be a large unguessable string
+  duration: 30 * 60 * 1000,
+  activeDuration: 5 * 60 * 1000,
+  httpOnly: false,
+  secure: false,
+  ephemeral: true
 }));
+
 app.use(bodyParser.json());         // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
@@ -39,7 +44,12 @@ app.use('/public', express.static(__dirname + '/public'));
 app.use('/static', express.static(__dirname + '/static'));
 
 app.get('*', function (req, res) {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  console.log("retreiving: " + req.session.auth_token);
+  if (req.session.auth_token || req.query.authFlow) {
+    res.sendFile(path.join(__dirname, 'index.html'));
+  } else {
+    res.redirect('./github?authFlow=true');
+  }
 });
 
 if(DEBUG == true){

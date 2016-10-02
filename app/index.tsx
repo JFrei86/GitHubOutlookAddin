@@ -55,11 +55,9 @@ class Main extends React.Component<{}, {}> {
     switch (route) {
       case '':
       case 'github':
-        return(<Provider store = {store}><GitHub /></Provider>);
+        return(<Provider store = {store}><GitHub dispatch={store.dispatch} /></Provider>);
       case 'done':
         return(<Done />);
-      case 'welcome':
-        return(<Authenticate />);
       default:
         return(<div>Error 404: '{route}'</div>);
     }

@@ -1,8 +1,38 @@
 /// <reference path="../../office.d.ts" />
 import * as React from 'react';
-import { Provider } from 'react-redux';
+import { Provider, connect } from 'react-redux';
+import { AuthState, updateAuthAction, IErrorStateAction } from '../actions/flowActions';
 
-export class Authenticate extends React.Component<any, {}> {
+/**
+ * Properties needed for the SignInButton component
+ * @interface ISignInProps
+ */
+interface ISignInProps {
+    /**
+     * intermediate to dispatch actions to update the global store
+     * @type {any}
+     */
+    dispatch?: any;
+    /**
+     * interval for checking the database for user token
+     * @type {number}
+     */
+    authState?: AuthState;
+}
+
+/**
+ * maps state in application store to properties for the component
+ * @param {any} state
+ */
+function mapStateToProps(state: any): ISignInProps {
+  return ({
+      authState: state.controlState.authState,
+  });
+}
+
+@connect(mapStateToProps)
+
+export class Authenticate extends React.Component<ISignInProps, {}> {
 
   public constructor() {
     super();
@@ -11,14 +41,13 @@ export class Authenticate extends React.Component<any, {}> {
   }
 
   public returnToAddin() {
-    Office.context.roamingSettings.set("hasAuth", true);
-    Office.context.roamingSettings.saveAsync();
-    window.location.href = 'http://localhost:3000/github';
+    this.props.dispatch(updateAuthAction(AuthState.Authorized));
   }
 
   public linkToAuth(): void {
     var authWindow = window.open('./authenticate');
     authWindow.onbeforeunload = this.returnToAddin;
+    this.props.dispatch(updateAuthAction(AuthState.Request));
   }
 
   public render(): React.ReactElement<Provider> {
