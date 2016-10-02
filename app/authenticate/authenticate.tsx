@@ -7,10 +7,18 @@ export class Authenticate extends React.Component<any, {}> {
   public constructor() {
     super();
     this.linkToAuth = this.linkToAuth.bind(this);
+    this.returnToAddin = this.returnToAddin.bind(this);
+  }
+
+  public returnToAddin() {
+    Office.context.roamingSettings.set("hasAuth", true);
+    Office.context.roamingSettings.saveAsync();
+    window.location.href = 'http://localhost:3000/github';
   }
 
   public linkToAuth(): void {
-    window.open('./authenticate');
+    var authWindow = window.open('./authenticate');
+    authWindow.onbeforeunload = this.returnToAddin;
   }
 
   public render(): React.ReactElement<Provider> {

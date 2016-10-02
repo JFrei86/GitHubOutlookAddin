@@ -2,14 +2,24 @@ var path = require('path');
 var express = require('express');
 var webpack = require('webpack');
 var bodyParser = require('body-parser');
+var cookieParser = require('cookie-parser');
+var session = require('express-session');
 var config = require('./config/webpack.prod');
 var authenticate = require('./routes/authenticate');
 var DEBUG = require('./debug');
+var url = require('url');
+var secret = require('./config/credentials').client_secret;
 
 var app = express();
 var compiler = webpack(config);
 var port = process.env.PORT || 3000;
 
+app.use(session({
+  secret: secret,
+  resave: true,
+  saveUninitialized: true,
+  cookie: { secure: false, maxAge: null }
+}));
 app.use(bodyParser.json());         // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true

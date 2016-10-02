@@ -53,6 +53,7 @@ class Main extends React.Component<{}, {}> {
     console.log(store.getState());
     const route: string = this.getRoute();
     switch (route) {
+      case '':
       case 'github':
         return(<Provider store = {store}><GitHub /></Provider>);
       case 'done':

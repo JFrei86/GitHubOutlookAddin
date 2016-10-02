@@ -2,11 +2,7 @@ var express = require('express');
 var fs = require('fs');
 var https = require('https');
 var querystring = require('querystring');
-var tedious = require('tedious');
 var DEBUG = require('../debug');
-var TYPES = tedious.TYPES;
-
-var REFRESH_MINIMUM = 60;
 
 var router = express.Router({ mergeParams: true });
 module.exports = router;
@@ -30,15 +26,17 @@ router.callback = function (req, res) {
   var data = querystring.stringify({
     code: req.query.code,
     client_id: secrets.client_id.toString(),
-    client_secret: secrets.client_secret.toString(),
+    client_secret: secrets.client_secret.toString()
   });
+
   var options = {
     host: 'github.com',
-    path: '/login/oauth/authorize',
+    path: '/login/oauth/access_token',
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      'Content-Length': data.length
+      'Content-Length': data.length,
+      'Accept': 'application/json'
     }
   };
   router.res = res;
@@ -53,13 +51,13 @@ router.callback = function (req, res) {
     //the whole response has been recieved, so we just print it out here
     response.on('end', function () {
       exchanges = JSON.parse(str);
-      saveToken(req.query.state, exchanges);
+      req.session.access_token = exchanges.access_token;
+      console.log("Saving " + req.session.access_token);
+      res.redirect('../github');
     });
   });
   httpPost.write(data);
   httpPost.end();
-  res.redirect("../done");
-
 };
 router.use('/callback', router.callback);
 
