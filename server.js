@@ -2,7 +2,6 @@ var path = require('path');
 var express = require('express');
 var webpack = require('webpack');
 var bodyParser = require('body-parser');
-var cookieParser = require('cookie-parser');
 var session = require('client-sessions');
 var config = require('./config/webpack.prod');
 var authenticate = require('./routes/authenticate');
@@ -20,9 +19,10 @@ app.use(session({
   secret: secret, // should be a large unguessable string
   duration: 30 * 60 * 1000,
   activeDuration: 5 * 60 * 1000,
-  httpOnly: false,
-  secure: false,
-  ephemeral: true
+  path: '/',
+  ephemeral: false, // when true, cookie expires when the browser closes
+  httpOnly: true, // when true, cookie is not accessible from javascript
+  secure: false // when true, cookie will only be sent over SSL. use key 'secureProxy' instead if you handle SSL not in your node process
 }));
 
 app.use(bodyParser.json());         // to support JSON-encoded bodies
@@ -44,8 +44,7 @@ app.use('/public', express.static(__dirname + '/public'));
 app.use('/static', express.static(__dirname + '/static'));
 
 app.get('*', function (req, res) {
-  console.log("retreiving: " + req.session.auth_token);
-  if (req.session.auth_token || req.query.authFlow) {
+  if (req.session.access_token || req.query.authFlow) {
     res.sendFile(path.join(__dirname, 'index.html'));
   } else {
     res.redirect('./github?authFlow=true');

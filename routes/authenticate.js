@@ -55,7 +55,6 @@ router.callback = function (req, res) {
         res.redirect('../done?status=fail&authFlow=false');
       }
       req.session.access_token = exchanges.access_token;
-      console.log("Saving " + req.session.access_token);
       res.redirect('../done?status=success&authFlow=false');
     });
   });
